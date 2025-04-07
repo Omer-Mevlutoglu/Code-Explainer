@@ -9,6 +9,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use(express.static("dist"));
+app.use((req, res, next) => {
+  res.setHeader("Content-Type", "application/javascript");
+  next();
+});
+
+app.get("/*", (req, res) => {
+  res.sendFile("dist/index.html", { root: "." });
+});
+
 const token = process.env["GITHUB_TOKEN"];
 const endpoint = "https://models.inference.ai.azure.com";
 const modelName = "gpt-4o";
@@ -25,7 +35,10 @@ app.post("/api/explain", async (req, res) => {
           role: "system",
           content: "You are a helpful assistant that explains code.",
         },
-        { role: "user", content: `Explain this code the shortest way you can :\n\n${code}` },
+        {
+          role: "user",
+          content: `Explain this code the shortest way you can :\n\n${code}`,
+        },
       ],
       temperature: 1.0,
       top_p: 1.0,
